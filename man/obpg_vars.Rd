@@ -4,10 +4,12 @@
 \alias{obpg_vars}
 \title{Retrieve obpg variables}
 \usage{
-obpg_vars(X)
+obpg_vars(X, drop = c("palette"))
 }
 \arguments{
 \item{X}{ncdf4 object}
+
+\item{drop}{character vector of variables to drop}
 }
 \value{
 character vector

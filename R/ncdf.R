@@ -59,14 +59,13 @@ obpg_time <- function(X,
 #' 
 #' @export
 #' @param X ncdf4 object
+#' @param drop character vector of variables to drop
 #' @return character vector
-obpg_vars <- function(X){
-  if (inherits(X, "ncdf4")){
-    x <- names(X$var)
-  } else {
-    x <- c("analysed_sst", "analysis_error", "mask", "sea_ice_fraction", 
-      "dt_1km_data", "sst_anomaly")
-  }
+obpg_vars <- function(X, drop = c("palette")){
+  
+  x <- names(X$var)
+  x <- x[!(x %in% drop)]
+  
   x
 }
 
@@ -77,9 +76,6 @@ obpg_vars <- function(X){
 #' @param g geometry object that defines point locations
 #' @param res numeric, 2 element resolution \code{[res_x,res_y]}
 #' @param varname character the name of the variable
-#' @param time numeric two elements time indexing \code{[start, length]}.
-#'   \code{start} is a 1-based index into the time dimension
-#'   \code{length} is the number of indices to retrieve (assumed to be contiguous sequence)
 #' @return data frame 
 #' \itemize{
 #'   \item{g the requested lonlats}
@@ -92,7 +88,6 @@ obpg_vars <- function(X){
 #' }
 obpg_nc_nav_point <- function(X, g,
                           res = obpg_res(X),
-                          time = c(1, -1),
                           varname = obpg_vars(X)){
   
   stopifnot(inherits(X, 'ncdf4'))
@@ -110,7 +105,7 @@ obpg_nc_nav_point <- function(X, g,
                  function(y){
                    which.min(abs(X$dim$lat$vals - y))[1]
                 })
-    start <- list(cbind(ix,iy, time[1]))
+    start <- list(cbind(ix,iy))
     count <- list(matrix(1, ncol = length(start[[1]]), nrow = nrow(tbl)))
     tbl |>
       dplyr::mutate(start = start, count = count)

@@ -7,8 +7,13 @@
 obpg_url(
   date = Sys.Date() - 2,
   where = "opendap",
-  root = file.path("https://oceandata.sci.gsfc.nasa.gov", "opendap/VIIRS/L3SMI/"),
-  product = "L3m_DAY_SNPP_CHL_chl_ocx_4km.nc"
+  root = "https://oceandata.sci.gsfc.nasa.gov/opendap",
+  level = c("L3", "L3SMI")[2],
+  mission = c("MODIS", "S3A", "SNPP", "ADEOS", "SEASTAR")[3],
+  instrument = c("AQUA", "TERRA", "OLCI", "SEAWIFS", "VIIRS", "OCTS")[5],
+  period = c("DAY", "MONTH")[1],
+  product = "SST.sst",
+  resolution = "9km"
 )
 }
 \arguments{
@@ -18,7 +23,17 @@ obpg_url(
 
 \item{root}{character, the root URL}
 
+\item{level}{character level component of path}
+
+\item{mission}{character mission component of path}
+
+\item{instrument}{character instrument component of path}
+
+\item{period}{character period component of path}
+
 \item{product}{character, provides version and extend info, leave as default}
+
+\item{resolution}{character resolution component of path}
 }
 \value{
 one or more URLs
