@@ -4,7 +4,7 @@
 \alias{obpg_vars}
 \title{Retrieve obpg variables}
 \usage{
-obpg_vars(X, drop = c("palette"))
+obpg_vars(X, drop = c("palette", "qual_sst"))
 }
 \arguments{
 \item{X}{ncdf4 object}

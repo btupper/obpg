@@ -34,5 +34,3 @@ obpg_url <- function(date = Sys.Date() - 2,
                   resolution)
   file.path(root, instrument, level, format(date, "%Y"), format(date, "%m%d"), name)                     
 }
-
-### http://oceandata.sci.gsfc.nasa.gov/opendap/VIIRS/L3SMI/2018/0722/SNPP_VIIRS.20180722.L3m.DAY.SST.sst.9km.nc

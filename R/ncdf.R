@@ -61,7 +61,7 @@ obpg_time <- function(X,
 #' @param X ncdf4 object
 #' @param drop character vector of variables to drop
 #' @return character vector
-obpg_vars <- function(X, drop = c("palette")){
+obpg_vars <- function(X, drop = c("palette", "qual_sst")){
   
   x <- names(X$var)
   x <- x[!(x %in% drop)]
@@ -132,9 +132,6 @@ obpg_nc_nav_point <- function(X, g,
 #' @param g geometry object that defines a bounding box
 #' @param res numeric, 2 element resolution \code{[res_x,res_y]}
 #' @param varname character the name of the variable
-#' @param time numeric two elements time indexing \code{[start, length]}.
-#'   \code{start} is a 1-based index into the time dimension
-#'   \code{length} is the number of indices to retrieve (assumed to be contiguous sequence)
 #' @return list with
 #' \itemize{
 #'   \item{bb the requested bounding box}
@@ -147,7 +144,6 @@ obpg_nc_nav_point <- function(X, g,
 #' }
 obpg_nc_nav_bb <- function(X, g,
                        res = obpg_res(X),
-                       time = c(1, -1),
                        varname =  obpg_vars(X)){
   
   stopifnot(inherits(X, 'ncdf4'))
@@ -164,12 +160,13 @@ obpg_nc_nav_bb <- function(X, g,
   we <- X$dim$lon$vals[ix]
   iy <- sapply(bb2[3:4],
                function(ybb) which.min(abs(X$dim$lat$vals-ybb)))
+  iy <- sort(iy)
   sn <- X$dim$lat$vals[iy]
   
   list(bb = bb,
        res = res,
-       start = c(ix[1], iy[1], time[1]),
-       count = c(ix[2] - ix[1] + 1, iy[2] - iy[1] + 1, time[2]),
+       start = c(ix[1], iy[1]),
+       count = c(ix[2] - ix[1] + 1, iy[2] - iy[1] + 1),
        ext = c(we + (half[1] * c(-1,1)), sn + (half[2] * c(-1,1)) ),
        crs = 4326,
        varname = varname)

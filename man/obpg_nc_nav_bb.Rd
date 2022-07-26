@@ -4,13 +4,7 @@
 \alias{obpg_nc_nav_bb}
 \title{Retrieve obpg navigation values (start, count, lons, lats)}
 \usage{
-obpg_nc_nav_bb(
-  X,
-  g,
-  res = obpg_res(X),
-  time = c(1, -1),
-  varname = obpg_vars(X)
-)
+obpg_nc_nav_bb(X, g, res = obpg_res(X), varname = obpg_vars(X))
 }
 \arguments{
 \item{X}{ncdf4 object}
@@ -18,10 +12,6 @@ obpg_nc_nav_bb(
 \item{g}{geometry object that defines a bounding box}
 
 \item{res}{numeric, 2 element resolution \code{[res_x,res_y]}}
-
-\item{time}{numeric two elements time indexing \code{[start, length]}.
-\code{start} is a 1-based index into the time dimension
-\code{length} is the number of indices to retrieve (assumed to be contiguous sequence)}
 
 \item{varname}{character the name of the variable}
 }

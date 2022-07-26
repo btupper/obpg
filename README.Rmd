@@ -5,11 +5,13 @@ output: github_document
 
 Access OPeNDAP OBPG data from R. Extract point or bounded boxes (as raster).
 
+Find a catalog of the available OBPG data offerings [here](https://oceandata.sci.gsfc.nasa.gov/opendap/)
+
 ## Requirements
 
 + [R v4.1+](https://www.r-project.org/)
 
-Packages from CRAN.
+Packages from CRAN:
 
 + [rlang](https://CRAN.R-project.org/package=rlang)
 + [dplyr](https://CRAN.R-project.org/package=httr)
@@ -18,7 +20,7 @@ Packages from CRAN.
 + [tidyr](https://CRAN.R-project.org/package=tidyr)
 + [ncdf4](https://CRAN.R-project.org/package=ncdf4)
 
-Packages from Github
+Packages from Github:
 
 + [xyzt](https://github.com/BigelowLab/xyzt)
 
@@ -39,9 +41,10 @@ knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages({
   library(dplyr)
   library(sf)
-  library(obpg)
-  library(xyzt)
   library(stars)
+  
+  library(xyzt)
+  library(obpg)
 })
 ```
 
@@ -67,6 +70,30 @@ covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X))
 
 # bind to the input
 (y <- dplyr::bind_cols(x, covars))
+```
+
+
+#### Working with bounding boxes
+
+```{r}
+x <- xyzt::read_gom() |>
+  dplyr::select(-time, -depth) |>
+  xyzt::as_BBOX()
+
+covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X))
+
+covars
+```
+
+Plot the bounding box of data with the points we pulled above:
+
+```{r}
+x <- xyzt::read_gom() |>
+  dplyr::select(-time, -depth) |>
+  xyzt::as_POINT()
+par(mfrow = c(1,2))
+plot(covars, attr = 'sst', col = sf.colors(n=16), axes = TRUE, reset = FALSE)
+plot(sf::st_geometry(x), add = TRUE, col = "green", pch = 19, cex = 2)
 ```
 
 
