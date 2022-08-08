@@ -128,8 +128,8 @@ extract.sfc_POINT <- function(x, y = NULL,
 #' @describeIn extract Extract data from a NCDF4 object using sf POLYGON object
 extract.sfc_POLYGON <- function(x, y = NULL, varname = obpg_vars(y)[1], ...){
   
-    bb <- xyzt::as_BBOX(x)
-    nav <- obpg_nc_nav_bb(y, bb, varname = varname)
+    #bb <- xyzt::as_BBOX(x)
+    nav <- obpg_nc_nav_bb(y, x, varname = varname)
     m <- ncdf4::ncvar_get(y, varid = varname,
                      start = nav$start, count = nav$count)
     stars::st_as_stars(sf::st_bbox(x), 
