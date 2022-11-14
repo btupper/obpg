@@ -125,6 +125,14 @@ covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X))
 covars
 ```
 
+```{r}
+x <- xyzt::read_gom() |>
+  dplyr::select(-time, -depth) |>
+  xyzt::as_POINT()
+par(mfrow = c(1,2))
+plot(covars, attr = 'sst', col = sf.colors(n=16), axes = TRUE, reset = FALSE)
+plot(sf::st_geometry(x), add = TRUE, col = "green", pch = 19, cex = 2)
+```
 
 
 ```{r}
