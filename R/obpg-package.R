@@ -5,4 +5,5 @@
 #' @docType package
 #' @name obpg
 #' @importFrom rlang .data := !! set_names
+#' @importFrom utils glob2rx
 "_PACKAGE"

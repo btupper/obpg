@@ -115,11 +115,6 @@ extract.sfc_POINT <- function(x, y = NULL,
 }
 
 
-
-
-
-
-
 #' @export
 #' @param x \code{sfc} object that defines a bounding box
 #' @param y \code{ncdf4} object 
