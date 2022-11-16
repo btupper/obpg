@@ -16,7 +16,7 @@ extract(x, ...)
 
 \method{extract}{sfc_POINT}(x, y = NULL, varname = obpg_vars(y), verbose = FALSE, ...)
 
-\method{extract}{sfc_POLYGON}(x, y = NULL, varname = obpg_vars(y)[1], ...)
+\method{extract}{sfc_POLYGON}(x, y = NULL, varname = obpg_vars(y)[1], flip = "y", ...)
 }
 \arguments{
 \item{x}{\code{sfc} object that defines a bounding box}
@@ -28,6 +28,8 @@ extract(x, ...)
 \item{varname}{character one or more variable names}
 
 \item{verbose}{logical, output helpful messages?}
+
+\item{flip}{char one of "y", "x" or "none" to flip the raster}
 }
 \value{
 data frame of covariates (point, or raster)

@@ -72,7 +72,8 @@ obpg_url <- function(date = Sys.Date() - 2,
 #' @param product char, the name of the product
 #' @param param char, the two part parmater name
 #' @param res char, the resolution as "9km" or "4km"
-#' @param top_uri charm, the path to the OBPG thredds catalog 
+#' @param top_uri char, the path to the OBPG thredds catalog 
+#' @param verbose logical, if TRUE output messages
 #' @return zero or more character URLs (most likely just one)
 query_obpg_climatology <- function(
     years = 2002:2003,
@@ -81,12 +82,14 @@ query_obpg_climatology <- function(
     product = "L3SMI",
     param = "SST.sst",
     res = "9km",
-    top_uri = "https://oceandata.sci.gsfc.nasa.gov/opendap"){
+    top_uri = "https://oceandata.sci.gsfc.nasa.gov/opendap",
+    verbose = FALSE){
   
   
   if (FALSE){
     years = 2002:2003
-    climatology = c("CU", "SCSU", "SCAU", "SCWI", "SCSP", month.abb)[1]
+    #climatology = c("CU", "SCSU", "SCAU", "SCWI", "SCSP", month.abb)[1]
+    climatology = "Jun"
     platform = "MODISA"
     product = "L3SMI"
     param = "SST.sst"
@@ -95,39 +98,56 @@ query_obpg_climatology <- function(
   }
   
   if (tolower(climatology) %in% tolower(month.abb)){
-    warning("month climatology not implemented yet - patience!")
-    return(NULL)
+    # AQUA_MODIS.20030601_20220630.L3m.MC.SST.sst.9km.nc
+    lut <- c(
+      "jan" = "20030101",
+      "feb" = "20030201",
+      "mar" = "20030301",
+      "apr" = "20030401",
+      "may" = "20030501",
+      "jun" = "20030601",
+      "jul" = "20020701",
+      "aug" = "20020801",
+      "sep" = "20020901",
+      "oct" = "20021001",
+      "nov" = "20021101",
+      "dec" = "20221201")
+    pattern <-  glob2rx(sprintf("*%s_*.MC.%s.%s.nc", lut[tolower(climatology)], param, res))
   } else {
-    
-    uri <- sprintf("%s/%s/%s/catalog.xml", top_uri, platform[1], product[1])
-    Top <- thredds::get_catalog(uri)
-    
     pattern <- glob2rx(sprintf("*.%s.%s.%s.nc", climatology, param, res))
-    
-    f <- NULL
-    for (year in years){
-      Year <- Top$get_catalogs(as.character(year))[[1]]
-      if (is.null(Year)) next
-      nm <- Year$get_catalog_names()
-      ix <- nchar(nm) > 3
-      Days <- Year$get_catalogs(nm[ix])
-      if (is.null(Days)) next
-      for (Day in Days){
-        dd <- Day$list_datasets()
-        ix <- grepl(pattern, names(dd))
-        if (any(ix)){
-          id <- unname(sapply(dd[ix], "[[", "ID"))
-          f <- id[length(id)]
-          break
-        }
-      } # Day
-      if (!is.null(f)) break
-    } # year
-    
-    # I hate this part
-    f <- sub("/opendap/hyrax/", "", f, fixed = TRUE)
   }
   
-  file.path(top_uri,f)
+  if (verbose) cat("search pattern:", pattern, "\n")
+  
+  uri <- sprintf("%s/%s/%s/catalog.xml", top_uri, platform[1], product[1])
+  Top <- thredds::get_catalog(uri)
+  f <- character()
+  i <- 0
+  for (year in years){
+    if (verbose) cat("searching year:", year, "\n")
+    Year <- Top$get_catalogs(as.character(year))[[1]]
+    if (is.null(Year)) next
+    nm <- Year$get_catalog_names()
+    ix <- nchar(nm) > 3
+    Days <- Year$get_catalogs(nm[ix])
+    if (is.null(Days)) next
+    for (Day in Days){
+      dd <- Day$list_datasets()
+      ix <- grepl(pattern, names(dd))
+      if (any(ix)){
+        id <- unname(sapply(dd[ix], "[[", "ID"))
+        f <- id[length(id)]   # get the last one
+        break
+      }
+    } # Day loop
+    if (length(f) > 0) break
+  } # year loop
+  
+  if (length(f) > 0){
+    # I hate this part
+    f <- sub("/opendap/hyrax/", "", f, fixed = TRUE)
+    f <- file.path(top_uri,f)
+  }
+  f
 }
 

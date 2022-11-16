@@ -11,7 +11,8 @@ query_obpg_climatology(
   product = "L3SMI",
   param = "SST.sst",
   res = "9km",
-  top_uri = "https://oceandata.sci.gsfc.nasa.gov/opendap"
+  top_uri = "https://oceandata.sci.gsfc.nasa.gov/opendap",
+  verbose = FALSE
 )
 }
 \arguments{
@@ -29,7 +30,9 @@ query_obpg_climatology(
 
 \item{res}{char, the resolution as "9km" or "4km"}
 
-\item{top_uri}{charm, the path to the OBPG thredds catalog}
+\item{top_uri}{char, the path to the OBPG thredds catalog}
+
+\item{verbose}{logical, if TRUE output messages}
 }
 \value{
 zero or more character URLs (most likely just one)

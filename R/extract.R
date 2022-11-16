@@ -119,20 +119,25 @@ extract.sfc_POINT <- function(x, y = NULL,
 #' @param x \code{sfc} object that defines a bounding box
 #' @param y \code{ncdf4} object 
 #' @param varname character one or more variable names
+#' @param flip char one of "y", "x" or "none" to flip the raster
 #' @return stars object (one variable per covariate)
 #' @describeIn extract Extract data from a NCDF4 object using sf POLYGON object
-extract.sfc_POLYGON <- function(x, y = NULL, varname = obpg_vars(y)[1], ...){
+extract.sfc_POLYGON <- function(x, y = NULL, varname = obpg_vars(y)[1], flip = "y", ...){
   
     #bb <- xyzt::as_BBOX(x)
     nav <- obpg_nc_nav_bb(y, x, varname = varname)
     m <- ncdf4::ncvar_get(y, varid = varname,
                      start = nav$start, count = nav$count)
-    stars::st_as_stars(sf::st_bbox(x), 
+    r <- stars::st_as_stars(sf::st_bbox(x), 
                          nx = nav$count[1],
                          ny = nav$count[2],
                          values = m ) |>
-      stars::st_flip("y") |>
       set_names(varname)
+    
+    if (tolower(flip[1]) %in% c("x", "y")){
+      r <- stars::st_flip(r, flip[1])
+    }
+    r
 }
 
 

@@ -139,7 +139,7 @@ x <- xyzt::read_gom() |>
 # open the resource
 X <- ncdf4::nc_open(uri)
 
-covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X))
+covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X), flip = "none")
 covars
 ```
 
