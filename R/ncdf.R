@@ -10,14 +10,24 @@ obpg_res <- function(X){
   
   ix <- grep("geospatial_lon_res", nm, fixed = TRUE)
   if (length(ix) > 0){
-    lon <- sub(" degrees", "", g[[ix]][1], fixed = TRUE)
+    if (is.numeric(g[[ix]][1])){
+      lon <- g[[ix]][1]
+    } else {
+      lon <- strsplit(g[[ix]][1], " ")[[1]][1]
+    }
+    #lon <- sub(" degrees", "", g[[ix]][1], fixed = TRUE)
   } else {
     lon <- 0.1
   }
 
   ix <- grep("geospatial_lat_res", nm, fixed = TRUE)
   if (length(ix) > 0){
-    lat <- sub(" degrees", "", g[[ix]][1], fixed = TRUE)
+    if (is.numeric(g[[ix]][1])){
+      lat <- g[[ix]][1]
+    } else {
+      lat <- strsplit(g[[ix]][1], " ")[[1]][1]
+      #lat <- sub(" degrees", "", g[[ix]][1], fixed = TRUE)
+    }
   } else {
     lat <- 0.1
   }

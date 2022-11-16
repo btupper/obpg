@@ -16,7 +16,7 @@ extract(x, ...)
 
 \method{extract}{sfc_POINT}(x, y = NULL, varname = obpg_vars(y), verbose = FALSE, ...)
 
-\method{extract}{sfc_POLYGON}(x, y = NULL, varname = obpg_vars(y)[1], ...)
+\method{extract}{sfc_POLYGON}(x, y = NULL, varname = obpg_vars(y)[1], flip = "y", ...)
 }
 \arguments{
 \item{x}{\code{sfc} object that defines a bounding box}
@@ -28,6 +28,8 @@ extract(x, ...)
 \item{varname}{character one or more variable names}
 
 \item{verbose}{logical, output helpful messages?}
+
+\item{flip}{char one of "y", "x" or "none" to flip the raster}
 }
 \value{
 data frame of covariates (point, or raster)
@@ -41,12 +43,12 @@ extract generic
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{default}: Extract data from a NCDF4 object
+\item \code{extract(default)}: Extract data from a NCDF4 object
 
-\item \code{sf}: Extract from a NCDF4 object using any sf object
+\item \code{extract(sf)}: Extract from a NCDF4 object using any sf object
 
-\item \code{sfc_POINT}: Extract data from a NCDF4 object using sf POINT object
+\item \code{extract(sfc_POINT)}: Extract data from a NCDF4 object using sf POINT object
 
-\item \code{sfc_POLYGON}: Extract data from a NCDF4 object using sf POLYGON object
+\item \code{extract(sfc_POLYGON)}: Extract data from a NCDF4 object using sf POLYGON object
+
 }}
-

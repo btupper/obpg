@@ -101,3 +101,42 @@ plot(sf::st_geometry(x), add = TRUE, col = "green", pch = 19, cex = 2)
 # cleanup
 ncdf4::nc_close(X)
 ```
+
+
+## Climatologies
+
+Mission-length climatologies are available (for the entire mission, a particular season or month.) You can search for these. Here we find the seasonal (northern) summer.
+
+```{r}
+uri <- query_obpg_climatology(climatology = "SCSU", res = "9km", param = "SST.sst")
+uri
+```
+
+```{r}
+
+x <- xyzt::read_gom() |>
+  dplyr::select(-time, -depth) |>
+  xyzt::as_BBOX()
+
+# open the resource
+X <- ncdf4::nc_open(uri)
+
+covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X), flip = "none")
+covars
+```
+
+```{r}
+x <- xyzt::read_gom() |>
+  dplyr::select(-time, -depth) |>
+  xyzt::as_POINT()
+par(mfrow = c(1,2))
+plot(covars, attr = 'sst', col = sf.colors(n=16), axes = TRUE, reset = FALSE)
+plot(sf::st_geometry(x), add = TRUE, col = "green", pch = 19, cex = 2)
+```
+
+
+```{r}
+# cleanup
+ncdf4::nc_close(X)
+```
+
