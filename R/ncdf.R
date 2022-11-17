@@ -13,7 +13,8 @@ obpg_res <- function(X){
     if (is.numeric(g[[ix]][1])){
       lon <- g[[ix]][1]
     } else {
-      lon <- strsplit(g[[ix]][1], " ")[[1]][1]
+      #lon <- strsplit(g[[ix]][1], " ")[[1]][1]
+      lon <- mean(abs(diff(X$dim$lon$vals[seq_len(100)])))
     }
     #lon <- sub(" degrees", "", g[[ix]][1], fixed = TRUE)
   } else {
@@ -25,7 +26,8 @@ obpg_res <- function(X){
     if (is.numeric(g[[ix]][1])){
       lat <- g[[ix]][1]
     } else {
-      lat <- strsplit(g[[ix]][1], " ")[[1]][1]
+      lat <- mean(abs(diff(X$dim$lat$vals[seq_len(100)])))
+      #lat <- strsplit(g[[ix]][1], " ")[[1]][1]
       #lat <- sub(" degrees", "", g[[ix]][1], fixed = TRUE)
     }
   } else {
