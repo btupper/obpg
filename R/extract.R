@@ -1,24 +1,40 @@
-# #' Get geometry dimension code
-# #' 
-# #' @export
-# #' @param x sf or sfc object
-# #' @return character vector such as "XY" or "XYZ"
-# get_geometry_dimension <- function(x){
-#   x <- sf::st_geometry(x)
-#   sort(unique(sapply(x, function(x) class(x)[1])))
-# }
-# 
-# 
-# #' Get geometry type code
-# #' 
-# #' @export
-# #' @param x sf or sfc object
-# #' @return character vector such as "POINT" or "POLYGON"
-# get_geometry_type <- function(x){
-#   klass <- sf::st_geometry(x) |>
-#     class()
-#   sub("sfc_", "", klass[1])
-# }
+#' Get geometry dimension code
+#' 
+#' @export
+#' @param x sf or sfc object
+#' @param recursive logical, if TRUE drill down to get the type for each
+#'   feature.
+#' @return character vector such as "XY" or "XYZ"
+get_geometry_dimension <- function(x, recursive = FALSE){
+  if (recursive[1]){
+    x <- sf::st_geometry(x)
+    d <- sapply(x,
+                function(x) {
+                  sort(unique(sapply(x, function(x) class(x)[1])))
+                })
+  } else {
+    x <- sf::st_geometry(x)
+    d <- sort(unique(sapply(x, function(x) class(x)[1])))
+  }
+  d
+}
+
+#' Get geometry type code
+#' 
+#' @export
+#' @param x sf or sfc object
+#' @param recursive logical, if TRUE drill down to get the type for each
+#'   feature.
+#' @return character vector such as "POINT" or "POLYGON"
+get_geometry_type <- function(x, recursive = FALSE){
+  if (recursive[1]){
+    klass <- sapply(sf::st_geometry(x), class)
+  } else {
+    klass <- sf::st_geometry(x) |>
+      class()
+  }
+  sub("sfc_", "", klass[1])
+}
 
 #' extract generic
 #'
@@ -31,12 +47,27 @@ extract <- function(x, ...) {
   UseMethod("extract")
 }
 
+
 #' @export
 #' @param x \code{sf} object
 #' @param y \code{ncdf4} object
 #' @describeIn extract Extract data from a NCDF4 object
 extract.default <- function(x, y = NULL, ...){
   stop("class not known:", paste(class(x), collapse = ", "))
+}
+
+#' @export
+#' @param x \code{bbox} object that defines a bounding box
+#' @param y \code{ncdf4} object 
+#' @param varname character one or more variable names
+#' @param flip char one of "y", "x" or "none" to flip the raster
+#' @return stars object (one variable per covariate)
+#' @describeIn extract Extract from a NCDF4 object using any sf object
+extract.bbox <- function(x, y = NULL, varname = obpg_vars(y)[1], flip = "y", ...){
+  
+  x = sf::st_as_sfc(x) 
+  
+  extract(x, y = y, varname = varname, flip = flip, ...)
 }
 
 #' @export
@@ -49,7 +80,7 @@ extract.sf <- function(x, y = NULL,
                        varname = obpg_vars(y),
                        verbose = FALSE, ...){
   
-  typ <- xyzt::get_geometry_type(x)
+  typ <- get_geometry_type(x)
   if (verbose[1]) {
     cat("extract.sf typ =", typ, "\n" )
     cat("  varname:", paste(varname, collapse = ", "), "\n")
@@ -124,7 +155,6 @@ extract.sfc_POINT <- function(x, y = NULL,
 #' @describeIn extract Extract data from a NCDF4 object using sf POLYGON object
 extract.sfc_POLYGON <- function(x, y = NULL, varname = obpg_vars(y)[1], flip = "y", ...){
   
-    #bb <- xyzt::as_BBOX(x)
     nav <- obpg_nc_nav_bb(y, x, varname = varname)
     m <- ncdf4::ncvar_get(y, varid = varname,
                      start = nav$start, count = nav$count)

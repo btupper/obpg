@@ -3,6 +3,7 @@
 \name{extract}
 \alias{extract}
 \alias{extract.default}
+\alias{extract.bbox}
 \alias{extract.sf}
 \alias{extract.sfc_POINT}
 \alias{extract.sfc_POLYGON}
@@ -11,6 +12,8 @@
 extract(x, ...)
 
 \method{extract}{default}(x, y = NULL, ...)
+
+\method{extract}{bbox}(x, y = NULL, varname = obpg_vars(y)[1], flip = "y", ...)
 
 \method{extract}{sf}(x, y = NULL, varname = obpg_vars(y), verbose = FALSE, ...)
 
@@ -27,12 +30,14 @@ extract(x, ...)
 
 \item{varname}{character one or more variable names}
 
-\item{verbose}{logical, output helpful messages?}
-
 \item{flip}{char one of "y", "x" or "none" to flip the raster}
+
+\item{verbose}{logical, output helpful messages?}
 }
 \value{
 data frame of covariates (point, or raster)
+
+stars object (one variable per covariate)
 
 tibble of extracted values (one variable per covariate)
 
@@ -44,6 +49,8 @@ extract generic
 \section{Methods (by class)}{
 \itemize{
 \item \code{extract(default)}: Extract data from a NCDF4 object
+
+\item \code{extract(bbox)}: Extract from a NCDF4 object using any sf object
 
 \item \code{extract(sf)}: Extract from a NCDF4 object using any sf object
 

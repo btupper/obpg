@@ -3,7 +3,7 @@ title: "obpg"
 output: github_document
 ---
 
-Access OPeNDAP OBPG data from R. Extract point or bounded boxes (as raster).
+Access OPeNDAP [OBPG](https://oceancolor.gsfc.nasa.gov/) data from R. Extract point or bounded boxes (as raster).
 
 Find a catalog of the available OBPG data offerings [here](https://oceandata.sci.gsfc.nasa.gov/opendap/)
 
@@ -17,13 +17,9 @@ Packages from CRAN:
 + [dplyr](https://CRAN.R-project.org/package=httr)
 + [sf](https://CRAN.R-project.org/package=sf)
 + [stars](https://CRAN.R-project.org/package=stars)
++ [thredds](https://CRAN.R-project.org/package=thredds)
 + [tidyr](https://CRAN.R-project.org/package=tidyr)
 + [ncdf4](https://CRAN.R-project.org/package=ncdf4)
-
-Packages from Github:
-
-+ [xyzt](https://github.com/BigelowLab/xyzt)
-
 
 ## Installation
 
@@ -39,63 +35,90 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 suppressPackageStartupMessages({
+  library(rnaturalearth)
   library(dplyr)
   library(sf)
   library(stars)
-  
-  library(xyzt)
   library(obpg)
 })
 ```
 
 
-#### Working with points.  
+#### Working with points and bounding boxes.  
 
-See the [xyzt](https://github.com/BigelowLab/xyzt) package for more details on the example Gulf of Maine data.
+See the [xyzt](https://github.com/BigelowLab/xyzt) package for more details on the example Gulf of Maine data; the location data following is adapted from that package.  Here we make a bounding box and a selection of points.  We also load a coastline from [NaturalEarth](https://www.naturalearthdata.com/) to use with plotting.
 
 ```{r}
-# read in example GOM points
-x <- xyzt::read_gom() |>
-  dplyr::select(-time, -depth) |>
-  xyzt::as_POINT()
+coast = rnaturalearth::ne_coastline(returnclass = 'sf', scale = "large")
+gom_box = c(xmin =  -72,
+            xmax = -63,
+            ymin = 39,
+            ymax = 46) |>
+  sf::st_bbox(crs = 4326)
 
-# generate a MUR url for a given date
-url <- obpg_url("2020-07-12")
+points = dplyr::tribble(
+     ~id,            ~name,   ~lon,  ~lat,               
+  "44098", "Jeffreys Ledge", -70.2,  42.8,
+  "44005", "Cashes Ledge",   -69.2,  43.2,
+  "44037", "Jordan Basin",   -67.9,  43.5,
+  "44011", "Georges Bank",   -66.6,  41.1,
+  "44008", "Nantucket SE",   -69.2,  40.5,) |>
+  sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+plot(points['name'], axes = TRUE, main = "Gulf of Maine", 
+     extent = gom_box, reset = FALSE, key.width = lcm(8), pch = 16, cex = 2)
+plot(sf::st_geometry(coast), add = TRUE, border = "black")
+```
+
+
+Create a URL for one of the (many) available resources at [OBPG](https://oceandata.sci.gsfc.nasa.gov/opendap/).  And then open the resource - it's a NetCDF.  Printed below is a summary of the contents of the resource including the variables and the dimensions over which the are defined.
+
+```{r}
+# generate a OBPG url for a given date
+url <- obpg_url(date = "2020-07-12",
+                mission = "MODIS",
+                instrument = "AQUA",
+                period = "DAY",
+                product = "SST.sst",
+                resolution = "9km")
 
 # open the resource
 X <- ncdf4::nc_open(url)
+X
+```
 
-# extract the data 
-covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X))
+#### Extract point data 
+
+Below we extract data for each point, and then bind it to the point data itself.
+
+```{r}
+covars <- obpg::extract(points, X, varname = obpg::obpg_vars(X))
 
 # bind to the input
-(y <- dplyr::bind_cols(x, covars))
+(y <- dplyr::bind_cols(points, covars))
 ```
 
 
 #### Working with bounding boxes
 
+Often a raster of a region is needed. In that case we can use a simple bounding box, or a polygon, to extract a subset raster. We return a [stars](https://r-spatial.github.io/stars/) object which is how raster data is handle within the [simple features](https://en.wikipedia.org/wiki/Simple_Features) paradigm.
+
 ```{r}
-x <- xyzt::read_gom() |>
-  dplyr::select(-time, -depth) |>
-  xyzt::as_BBOX()
 
-covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X))
-
+covars <- obpg::extract(gom_box, X, varname = obpg::obpg_vars(X), flip = "none")
 covars
 ```
 
-Plot the bounding box of data with the points we pulled above:
+Plot the bounding box of data with the points we pulled above.  Note that surface temperatures are also returned for open bodies of water including lakes. Apparently cloud cover is an issue on this day.
 
 ```{r}
-x <- xyzt::read_gom() |>
-  dplyr::select(-time, -depth) |>
-  xyzt::as_POINT()
 par(mfrow = c(1,2))
 plot(covars, attr = 'sst', col = sf.colors(n=16), axes = TRUE, reset = FALSE)
-plot(sf::st_geometry(x), add = TRUE, col = "green", pch = 19, cex = 2)
+plot(sf::st_geometry(coast), border = "black", add = TRUE)
+plot(sf::st_geometry(points), add = TRUE, col = "green", pch = 19, cex = 2)
 ```
 
+Always close the resource when you are done. That frees up the server to other tasks.
 
 ```{r}
 # cleanup
@@ -108,30 +131,28 @@ ncdf4::nc_close(X)
 Mission-length climatologies are available (for the entire mission, a particular season or month.) You can search for these. Here we find the seasonal (northern) summer.
 
 ```{r}
-uri <- query_obpg_climatology(climatology = "SCSU", res = "9km", param = "SST.sst")
+uri <- query_obpg_climatology(
+                climatology = "SCSU", 
+                res = "9km", 
+                param = "SST.sst")
 uri
 ```
 
+
+We open the resource and then extract rasterized data.
 ```{r}
-
-x <- xyzt::read_gom() |>
-  dplyr::select(-time, -depth) |>
-  xyzt::as_BBOX()
-
 # open the resource
 X <- ncdf4::nc_open(uri)
 
-covars <- obpg::extract(x, X, varname = obpg::obpg_vars(X), flip = "none")
+covars <- obpg::extract(gom_box, X, varname = obpg::obpg_vars(X), flip = "none")
 covars
 ```
 
 ```{r}
-x <- xyzt::read_gom() |>
-  dplyr::select(-time, -depth) |>
-  xyzt::as_POINT()
 par(mfrow = c(1,2))
 plot(covars, attr = 'sst', col = sf.colors(n=16), axes = TRUE, reset = FALSE)
-plot(sf::st_geometry(x), add = TRUE, col = "green", pch = 19, cex = 2)
+plot(sf::st_geometry(coast), border = "black", add = TRUE)
+plot(sf::st_geometry(points), add = TRUE, col = "green", pch = 19, cex = 2)
 ```
 
 
